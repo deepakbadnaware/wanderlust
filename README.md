@@ -50,7 +50,7 @@ $ cp .env.sample .env.local
 
 $ nohup npm run dev -- --host &
  
-Starting using docker-compose ->
+# Starting using docker-compose :
 
 $ docker-compose up
 
