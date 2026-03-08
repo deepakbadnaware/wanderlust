@@ -1,25 +1,53 @@
-pipeline{
+pipeline {
     agent any
-    stages{
-        stage("Pull"){
-            steps{
-                echo "Pull Repo"
+
+    environment {
+        COMPOSE_FILE = 'docker-compose.yml'
+    }
+
+    stages {
+        stage('Clean Workspace') {
+            steps {
+                cleanWs()
             }
         }
-        stage("Build"){
-            steps{
-                echo "Build"
+
+        stage('Checkout') {
+            steps {
+                checkout scm
             }
         }
-        stage("Test"){
-            steps{
-                echo "Test"
+
+        stage('Build Images') {
+            steps {
+                sh 'docker-compose build'          // build images first
             }
         }
-        stage("Deploy"){
-            steps{
-                echo "Deploy"
+
+        stage('Docker Compose Up') {
+            steps {
+                sh 'docker-compose up -d'          // start all containers
+                sh 'docker-compose ps'             // verify containers are running
             }
+        }
+
+        stage('Check Logs') {
+            steps {
+                sh 'docker-compose logs'           // print logs
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'All containers are up!'
+        }
+        failure {
+            sh 'docker-compose down'              // bring down if build fails
+            cleanWs()
+        }
+        always {
+            cleanWs()
         }
     }
 }
